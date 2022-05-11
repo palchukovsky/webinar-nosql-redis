@@ -36,10 +36,12 @@ int main(const int argc, const char *argv[]) {
     std::cout << std::endl << "String put-get test:" << std::endl << std::endl;
 
     // Put value.
-    redis.set("key", "val");
+    redis.set("keyX", "valX");
 
     // Get value.
-    const auto &val = redis.get("key");
+    const auto &val = redis.get("keyX");
+
+    std::cout << R"(redis.set("keyX", "valX") -> redis.get("keyX"): )";
 
     if (val) {
       std::cout << *val << std::endl;
@@ -70,7 +72,7 @@ int main(const int argc, const char *argv[]) {
       std::vector<std::string> result;
       redis.lrange("list", 0, -1, std::back_inserter(result));
 
-      std::cout << Join(result) << std::endl;
+      std::cout << "Vector from DB: " << Join(result) << std::endl;
     }
 
     std::cout << std::endl
@@ -99,8 +101,9 @@ int main(const int argc, const char *argv[]) {
                         redis::UnboundedInterval<double>{},  // (-inf, +inf)
                         std::back_inserter(result));
 
+    std::cout << "Sorted:" << std::endl;
     for (const auto &record : result) {
-      std::cout << record.first << ": " << record.second << std::endl;
+      std::cout << "\t" << record.first << ": " << record.second << std::endl;
     }
 
     std::cout << std::endl
@@ -117,7 +120,8 @@ int main(const int argc, const char *argv[]) {
     // Script returns a single element.
     const auto &num = redis.eval<long long>("return 1", {}, {});
 
-    std::cout << "num: " << num << std::endl;
+    std::cout << "Script returns a single element, num is: " << num
+              << std::endl;
 
     // Script returns an array of elements.
     const auto calc_script = R"(
@@ -131,7 +135,8 @@ int main(const int argc, const char *argv[]) {
     std::vector<std::string> nums;
     redis.eval(calc_script, {}, {"1", "2"}, std::back_inserter(nums));
 
-    std::cout << "nums: " << Join(nums) << std::endl;
+    std::cout << "Script returns an array of elements, nums is: " << Join(nums)
+              << std::endl;
 
     std::cout << std::endl
               << std::endl
@@ -172,7 +177,8 @@ int main(const int argc, const char *argv[]) {
     testKeys();
     std::cout << std::endl
               << std::endl
-              << "WAIT 6 seconds and press any key..." << std::endl;
+              << "Checking TTL, WAIT 6 seconds and press any key..."
+              << std::endl;
     getchar();
     testKeys();
 
