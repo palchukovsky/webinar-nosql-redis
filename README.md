@@ -31,5 +31,5 @@ Look for your executable in "build/bin"
 ## Usage
 
 ```bash
-$ redis_demo < create | update | query >
+$ redis_demo
 ```
