@@ -115,14 +115,21 @@ int main(const int argc, const char *argv[]) {
     std::cout << std::endl << "Redis has scripts:" << std::endl << std::endl;
 
     // Script returns a single element.
-    auto num = redis.eval<long long>("return 1", {}, {});
+    const auto &num = redis.eval<long long>("return 1", {}, {});
 
     std::cout << "num: " << num << std::endl;
 
     // Script returns an array of elements.
+    const auto calc_script = R"(
+      local arg1_num = tonumber(ARGV[1])
+      local arg2_num = tonumber(ARGV[2])
+      local result1 = arg1_num + 1
+      local result2 = arg2_num - 1
+      return {tostring(result1), tostring(result2)}
+    )";
+
     std::vector<std::string> nums;
-    redis.eval("return {ARGV[1], ARGV[2]}", {}, {"1", "2"},
-               std::back_inserter(nums));
+    redis.eval(calc_script, {}, {"1", "2"}, std::back_inserter(nums));
 
     std::cout << "nums: " << Join(nums) << std::endl;
 
@@ -138,7 +145,7 @@ int main(const int argc, const char *argv[]) {
     std::cout << std::endl << "Time to live (TTL):" << std::endl << std::endl;
 
     // mset with TTL
-    auto mset_with_ttl_script = R"(
+    const auto mset_with_ttl_script = R"(
         local len = #KEYS
         if (len == 0 or len + 1 ~= #ARGV) then return 0 end
         local ttl = tonumber(ARGV[len + 1])
